@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <title>e-comic reader</title>
+        <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.0.js" ></script>
+
+    </head>
+    <body>
+        <img src="logo.png" />
+        </br>
+        <input id="input" />
+        <button id="open">Open</buttom>
+        <script>
+            $("#input")[0].value = "https://github.com/feilongfl/comicdata/raw/master";
+	        $("#open")[0].onclick = function () {
+	            if($("#input")[0].value != "")
+	            {
+		            window.location.href="reader.html?giturl=" + btoa($("#input")[0].value);
+	            }
+	        };
+
+        </script>
+    </body>
+</html>

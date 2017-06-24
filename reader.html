@@ -1,0 +1,95 @@
+<html>
+    <head>
+        <title>e-comic reader</title>
+        <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.0.js" ></script>
+		<script>
+			//获取url中的参数
+			function getUrlParam(name) {
+				var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+				var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+				if (r != null) return unescape(r[2]); return null; //返回参数值
+			}
+		</script>
+
+    </head>
+    <body>
+        <script>
+            var url = atob(getUrlParam("giturl")) + "/";
+            var cors = "http://cors-anywhere.herokuapp.com/";
+            //var page = getUrlParam("pagenum");
+            function canvasTextAutoLine(str, canvas, initX, initY, maxLineWidth,s,f) {
+                var ctx = canvas.getContext("2d");
+                ctx.font = s + "px " + f;
+                var lineWidth = 0;
+                var canvasWidth = canvas.width;
+                var lastSubStrIndex = 0;
+                for (let i = 0; i < str.length; i++) {
+                    lineWidth += ctx.measureText(str[i]).width;
+                    if (lineWidth > canvasWidth - initX || lineWidth > maxLineWidth) {//减去initX,防止边界出现的问题
+                        ctx.fillText(str.substring(lastSubStrIndex, i), initX, initY);
+                        initY += s;
+                        lineWidth = 0;
+                        lastSubStrIndex = i;
+                    }
+                    if (i == str.length - 1) {
+                        ctx.fillText(str.substring(lastSubStrIndex, i + 1), initX, initY);
+                    }
+                }
+            }
+
+		</script>
+		<img id = "cover" />
+		<h1 id = "title" />
+		<h4 id = "author" />
+		<canvas id="pic">
+		</canvas>
+
+		<script>
+            //加载封面
+		    $("#cover")[0].src = url + "cover.jpg";
+
+		    
+            //加载漫画
+		    var img = new Image();
+		    img.src = url + "comic/0001/pic_noword/0001.jpg";
+
+		    var canvas = document.getElementById('pic');
+		    var ctx = canvas.getContext('2d');
+
+		    function loadPic()
+            {
+		        if (img.complete) {
+		            ctx.canvas.width = img.width;
+		            ctx.canvas.height = img.height;
+		            ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, ctx.canvas.width, ctx.canvas.height);
+
+		            //加载文本
+		            $.get(cors + url + '/comic/0001/PliersWord/0001/zh-cn', function (res) {
+		                console.log(res);
+		                a = eval('(' + res + ')');
+
+		                a.words.forEach(function (word, index, ar) {
+		                    if (word.s == null && word.f == null) {
+		                        canvasTextAutoLine(word.t, canvas, word.x, word.y, word.w, a.s,a.f);
+		                    }
+		                    else if (word.s == null) {
+		                        canvasTextAutoLine(word.t, canvas, word.x, word.y, word.w, a.s,word.f);
+		                    }
+		                    else if (word.f == null) {
+		                        canvasTextAutoLine(word.t, canvas, word.x, word.y, word.w, word.s,a.f);
+		                    }
+		                    else {
+		                        canvasTextAutoLine(word.t, canvas, word.x, word.y, word.w, word.s,word.f);
+		                    }
+		                })
+		            });
+		        }
+		        else
+		        {
+		            setTimeout(loadPic, 100);
+		        }
+            }
+		    loadPic();
+		</script>
+    </body>
+</html>
